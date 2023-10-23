@@ -16,7 +16,6 @@ return new class extends Migration
 
             $table->id();
             $table->string('title');
-            $table->string('slug');
             $table->text('content');
             $table->unsignedBigInteger('user_id');
             $table->integer('image_id')->default(0);

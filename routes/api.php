@@ -12,4 +12,7 @@ Route::post('/user/register', [RegisterController::class, 'create']);
 Route::post('/user/login', [LoginController::class, 'login']);
 Route::post('/user/update', [UserController::class, 'update']);
 
+Route::post('/post/create', [PostController::class, 'create']);
 Route::post('/post/uploadImage', [PostController::class, 'uploadImage']);
+Route::get('/posts', [PostController::class, 'getPosts']);
+Route::get('/post/{id}', [PostController::class, 'getPost']);

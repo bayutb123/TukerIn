@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('post_image', function (Blueprint $table) {
             $table->id();
             $table->integer('post_id');
-            $table->string('image_url');
+            $table->string('image_name');
             $table->timestamps();
             $table->softDeletes();
         });

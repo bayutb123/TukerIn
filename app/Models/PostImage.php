@@ -10,7 +10,7 @@ class PostImage extends Model
     use HasFactory;
 
     // init table name
-    protected $table = 'post_images';
+    protected $table = 'post_image';
 
     /**
      * The attributes that are mass assignable.
@@ -20,7 +20,7 @@ class PostImage extends Model
 
     protected $fillable = [
         'post_id',
-        'image_path',
+        'image_name',
     ];
 
     /**
