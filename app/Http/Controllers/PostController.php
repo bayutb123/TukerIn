@@ -79,4 +79,23 @@ class PostController extends Controller
             'posts' => $posts
         ], 200);
     }
+
+    protected function deletePost($id) {
+        $post = Post::where('id', $id)->first();
+        $images = PostImage::where('post_id', $post->id)->get();
+        if (!$post) {
+            return response()->json([
+                'message' => 'Post not found',
+                'post' => null
+            ], 400);
+        }
+        foreach ($images as $image) {
+            $image->delete();
+        }
+        $post->delete();
+        return response()->json([
+            'message' => 'Post deleted successfully',
+            'post' => $post
+        ], 200);
+    }
 }
