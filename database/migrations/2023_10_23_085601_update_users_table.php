@@ -18,6 +18,7 @@ return new class extends Migration
                                 ->default(null);
             // rename email_verified_at to verified_at
             $table->renameColumn('email_verified_at', 'verified_at');
+            $table->integer('is_premium_user')->default(0);
             $table->string('profile_photo_path', 2048)->nullable()->after('remember_token');
         });
     }
