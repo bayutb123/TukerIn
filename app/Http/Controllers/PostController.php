@@ -6,6 +6,7 @@ use App\Http\Requests\CreatePostRequest;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use App\Models\PostImage;
+use App\Http\Requests\UpdatePostRequest;
 use App\Models\User;
 
 class PostController extends Controller
@@ -97,5 +98,35 @@ class PostController extends Controller
             'message' => 'Post deleted successfully',
             'post' => $post
         ], 200);
+    }
+
+    protected function updatePost(UpdatePostRequest $request) {
+        $validated = $request->validated();
+        if ($validated) {
+            $post = Post::where('id', $validated['post_id'])->first();
+            if (!$post) {
+                return response()->json([
+                    'message' => 'Post not found',
+                    'post' => null
+                ], 400);
+            }
+            $post->title = $validated['title'];
+            $post->content = $validated['content'] ? $validated['content'] : $post->content;
+            if ($validated['status']) {
+                $post->status = $validated['status'];
+            }
+            $post->is_premium = $validated['is_premium'] ? $validated['is_premium'] : $post->is_premium;
+            $post->latitude = $validated['latitude'] ? $validated['latitude'] : $post->latitude;
+            $post->longitude = $validated['longitude'] ? $validated['longitude'] : $post->longitude;
+            $post->save();
+            return response()->json([
+                'message' => 'Post updated successfully',
+                'post' => $post
+            ], 200);
+        }
+        return response()->json([
+            'message' => 'Invalid request',
+            'errors' => $validated->errors()
+        ], 400);
     }
 }
