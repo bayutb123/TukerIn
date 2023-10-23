@@ -16,6 +16,9 @@ return new class extends Migration
                                 ->unique()
                                 ->nullable()
                                 ->default(null);
+            // rename email_verified_at to verified_at
+            $table->renameColumn('email_verified_at', 'verified_at');
+            $table->string('profile_photo_path', 2048)->nullable()->after('remember_token');
         });
     }
 
@@ -26,6 +29,8 @@ return new class extends Migration
     {
         Schema::table('users', function ($table) {
             $table->dropColumn('api_token');
+            $table->renameColumn('verified_at', 'email_verified_at');
+            $table->dropColumn('profile_photo_path');
         });
     }
 };
