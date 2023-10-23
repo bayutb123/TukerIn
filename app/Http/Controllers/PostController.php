@@ -61,10 +61,12 @@ class PostController extends Controller
                 'post' => null
             ], 400);
         }
+        $author = User::where('id', $post->user_id)->first();
         $post->images = PostImage::where('post_id', $post->id)->get();
+        $post->author = $author;
         return response()->json([
             'message' => 'Post found',
-            'post' => $post
+            'post' => $post,
         ], 200);
     }
 
