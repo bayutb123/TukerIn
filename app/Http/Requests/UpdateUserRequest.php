@@ -30,6 +30,7 @@ class UpdateUserRequest extends FormRequest
                 'email',
                 'max:255',
             ],
+            'photo_path' => 'nullable|string|max:255',
         ];
     }
 }

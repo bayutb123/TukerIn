@@ -18,6 +18,9 @@ class UserController extends Controller
                     'user' => null
                 ], 400);
             }
+            if ($validated['photo_path']) {
+                $user->profile_photo_path = $validated['photo_path'];
+            }
             $user->name = $validated['name'];
             $user->email = $validated['email'];
             $user->save();
