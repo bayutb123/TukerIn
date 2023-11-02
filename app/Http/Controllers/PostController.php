@@ -53,6 +53,18 @@ class PostController extends Controller
         ], 400);
     }
 
+    protected function searchPost($query, $id) {
+        $posts = Post::where('title', 'LIKE', "%{$query}%")->where('user_id', '!=', $id)->get();
+        foreach ($posts as $post) {
+            $post->thumnail = PostImage::where('post_id', $post->id)->first();
+            $post->author = User::where('id', $post->user_id)->first();
+        }
+        return response()->json([
+            'message' => 'Posts found',
+            'posts' => $posts
+        ], 200);
+    }
+
     protected function getPost($id) {
         $post = Post::where('id', $id)->first();
         if (!$post) {
@@ -70,16 +82,23 @@ class PostController extends Controller
         ], 200);
     }
 
-    protected function getPosts() {
-        $posts = Post::all();
+    protected function getPosts($user_id) {
+        $posts = Post::where('user_id', '!=', $user_id)->get();
         foreach ($posts as $post) {
             $post->thumnail = PostImage::where('post_id', $post->id)->first();
             $post->author = User::where('id', $post->user_id)->first();
         }
-        $posts = $posts->sortByDesc('is_premium');
+        // premium post are shown first
+        $premium_posts = $posts->where('is_premium', 1);
+
+        // standard post are shown after premium posts and ordered by id by desc
+        $standard_posts = $posts->where('is_premium', 0)->sortByDesc('id');
+
+        // combine premium and all posts
+        $all_posts = $premium_posts->merge($standard_posts);
         return response()->json([
             'message' => 'Posts found',
-            'posts' => $posts
+            'posts' => $all_posts
         ], 200);
     }
 

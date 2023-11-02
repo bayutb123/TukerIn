@@ -25,6 +25,7 @@ class CreatePostRequest extends FormRequest
             'user_id' => 'required|integer',
             'title' => 'required|string|max:255',
             'content' => 'required|string',
+            'price' => 'required|integer',
             'image' => 'array',
             'status' => 'integer',
             'is_premium' => 'integer',

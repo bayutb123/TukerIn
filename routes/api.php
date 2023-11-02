@@ -14,7 +14,8 @@ Route::post('/user/update', [UserController::class, 'update']);
 
 Route::post('/post/create', [PostController::class, 'create']);
 Route::post('/post/uploadImage', [PostController::class, 'uploadImage']);
-Route::get('/post/all', [PostController::class, 'getPosts']);
+Route::get('/post/all/{userId}', [PostController::class, 'getPosts']);
 Route::get('/post/get/{id}', [PostController::class, 'getPost']);
+Route::get('/post/search/{query}/{id}', [PostController::class, 'searchPost']);
 Route::put('/post/update', [PostController::class, 'updatePost']);
 Route::delete('/post/delete/{id}', [PostController::class, 'deletePost']);

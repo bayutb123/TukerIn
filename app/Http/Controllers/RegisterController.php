@@ -18,7 +18,7 @@ class RegisterController extends Controller
                 return response()->json([
                     'message' => 'Email already exists',
                     'user' => null
-                ], 400);
+                ], 409);
             }
             $registered = User::forceCreate([
                 'name' => $validated['name'],
