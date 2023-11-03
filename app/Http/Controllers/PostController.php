@@ -65,6 +65,22 @@ class PostController extends Controller
         ], 200);
     }
 
+    protected function searchSuggestion($query, $id) {
+        // select max 10 posts with unique title
+        $posts = Post::where('title', 'LIKE', "%{$query}%")->where('user_id', '!=', $id)->limit(10)->get();
+        $posts = $posts->unique('title');
+        $suggestions = [];
+        foreach ($posts as $post) {
+            // push only title and id
+            array_push($suggestions, [
+                'title' => $post->title
+            ]);
+        }
+        return response()->json([
+            'suggestions' => $suggestions
+        ], 200);
+    }
+
     protected function getPost($id) {
         $post = Post::where('id', $id)->first();
         if (!$post) {
