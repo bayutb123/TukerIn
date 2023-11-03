@@ -67,7 +67,7 @@ class PostController extends Controller
 
     protected function searchSuggestion($query, $id) {
         // select max 10 posts with unique title
-        $posts = Post::where('title', 'LIKE', "%{$query}%")->where('user_id', '!=', $id)->limit(10)->get();
+        $posts = Post::where('title', 'LIKE', "%{$query}%")->where('user_id', '!=', $id)->get();
         $posts = $posts->unique('title');
         $suggestions = [];
         foreach ($posts as $post) {
@@ -76,6 +76,7 @@ class PostController extends Controller
                 'title' => $post->title
             ]);
         }
+        $suggestions = array_slice($suggestions, 0, 10);
         return response()->json([
             'suggestions' => $suggestions
         ], 200);
