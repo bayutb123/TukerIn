@@ -22,7 +22,6 @@ class Post extends Model
         'content',
         'price',
         'user_id',
-        'image_id',
         'status',
         'is_premium',
         'latitude',

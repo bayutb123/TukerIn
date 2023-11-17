@@ -91,8 +91,11 @@ class PostController extends Controller
             ], 400);
         }
         $author = User::where('id', $post->user_id)->first();
-        $post->images = PostImage::where('post_id', $post->id)->get();
-        $post->author = $author;
+        // get all images of post just image_name
+        $images = PostImage::where('post_id', $post->id)->get();
+        $post->images = $images->pluck('image_name');
+        $post->author_name = $author->name;
+        $post->author_email = $author->email;
         return response()->json([
             'message' => 'Post found',
             'post' => $post,

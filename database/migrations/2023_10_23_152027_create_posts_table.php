@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('title');
             $table->text('content');
             $table->unsignedBigInteger('user_id');
-            $table->integer('image_id')->default(0);
             $table->integer('status')->default(0);
             $table->integer('is_premium')->default(0);
             $table->decimal('latitude', 10, 8);
