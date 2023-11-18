@@ -8,13 +8,25 @@ use Illuminate\Http\Request;
 use App\Models\PostImage;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\User;
+use GuzzleHttp\Client;
 
 class PostController extends Controller
 {
     protected function create(CreatePostRequest $request) {
         $validated = $request->validated();
         if ($validated) {
-            $post = Post::create($validated);
+            $post = Post::create([
+                'user_id' => $validated['user_id'],
+                'title' => $validated['title'],
+                'content' => $validated['content'],
+                'status' => 0,
+                'is_premium' => 0,
+                'price' => $validated['price'],
+                'latitude' => $validated['latitude'],
+                'longitude' => $validated['longitude'],
+                'city' => $this->getAddressFromLatLong($validated['latitude'], $validated['longitude'])->original['address']
+            ]);
+
             $images = $validated['image'];
             foreach ($images as $image) {
                 $imagePost = PostImage::create([
@@ -93,7 +105,7 @@ class PostController extends Controller
         $author = User::where('id', $post->user_id)->first();
         // get all images of post just image_name
         $images = PostImage::where('post_id', $post->id)->get();
-        $post->address = $this->getAddressFromLatLong($post->latitude, $post->longitude)->original['address'];
+        $post->address = $post->city;
         $post->images = $images->pluck('image_name');
         $post->author_name = $author->name;
         $post->author_email = $author->email;
@@ -108,8 +120,6 @@ class PostController extends Controller
         foreach ($posts as $post) {
             $post->thumnail = PostImage::where('post_id', $post->id)->first();
             $post->author = User::where('id', $post->user_id)->first();
-            $post->address = "Jakarta [test]";
-
         }
         // premium post are shown first
         $premium_posts = $posts->where('is_premium', 1)->sortByDesc('id');
@@ -195,7 +205,7 @@ class PostController extends Controller
         $properties = $address->features[0]->properties;
 
         return response()->json([
-            'address' => $properties->formatted
+            'address' => $properties->city
         ], 200);
     }
 

@@ -26,6 +26,7 @@ class Post extends Model
         'is_premium',
         'latitude',
         'longitude',
+        'city',
     ];
 
     /**
