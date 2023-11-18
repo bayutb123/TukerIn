@@ -17,6 +17,7 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
+    'geoapify_api_key' => env('GEOAPIFY_API_KEY', null),
 
     /*
     |--------------------------------------------------------------------------

@@ -93,6 +93,7 @@ class PostController extends Controller
         $author = User::where('id', $post->user_id)->first();
         // get all images of post just image_name
         $images = PostImage::where('post_id', $post->id)->get();
+        $post->address = $this->getAddressFromLatLong($post->latitude, $post->longitude)->original['address'];
         $post->images = $images->pluck('image_name');
         $post->author_name = $author->name;
         $post->author_email = $author->email;
@@ -102,23 +103,32 @@ class PostController extends Controller
         ], 200);
     }
 
-    protected function getPosts($user_id) {
-        $posts = Post::where('user_id', '!=', $user_id)->get();
+    protected function getPosts($user_id, $limit = 10) {
+        $posts = Post::where('user_id', "!=", $user_id)->orderBy('created_at', 'desc')->paginate($limit);
         foreach ($posts as $post) {
             $post->thumnail = PostImage::where('post_id', $post->id)->first();
             $post->author = User::where('id', $post->user_id)->first();
+            $post->address = "Jakarta [test]";
+
         }
         // premium post are shown first
-        $premium_posts = $posts->where('is_premium', 1);
+        $premium_posts = $posts->where('is_premium', 1)->sortByDesc('id');
 
         // standard post are shown after premium posts and ordered by id by desc
         $standard_posts = $posts->where('is_premium', 0)->sortByDesc('id');
 
         // combine premium and all posts
         $all_posts = $premium_posts->merge($standard_posts);
+
         return response()->json([
             'message' => 'Posts found',
-            'posts' => $all_posts
+            'posts' => $all_posts,
+            'pagination' => [
+                'current_page' => $posts->currentPage(),
+                'last_page' => $posts->lastPage(),
+                'per_page' => $posts->perPage(),
+                'total' => $posts->total()
+            ]
         ], 200);
     }
 
@@ -169,6 +179,24 @@ class PostController extends Controller
             'message' => 'Invalid request',
             'errors' => $validated->errors()
         ], 400);
+    }
+
+    protected function getAddressFromLatLong($lat, $long) {
+        $url = "https://api.geoapify.com/v1/geocode/reverse?lat=".$lat."&lon=".$long."&apiKey=".config('app.geoapify_api_key');
+        
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+        $response = curl_exec($ch);
+        $address = json_decode($response);
+        curl_close($ch);
+
+        $properties = $address->features[0]->properties;
+
+        return response()->json([
+            'address' => $properties->formatted
+        ], 200);
     }
 
 }
