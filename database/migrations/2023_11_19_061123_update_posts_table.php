@@ -13,7 +13,6 @@ return new class extends Migration
     {
         // add new column named city
         Schema::table('posts', function (Blueprint $table) {
-            $table->string('city')->after('longitude')->nullable();
             $table->decimal('price', 18, 2)->change();
         });
     }
@@ -25,7 +24,7 @@ return new class extends Migration
     {
         // drop column named city
         Schema::table('posts', function (Blueprint $table) {
-            $table->dropColumn('city');
+            $table->decimal('price', 18, 2)->change();
         });
     }
 };
