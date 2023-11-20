@@ -21,24 +21,35 @@ class PostController extends Controller
                 'content' => $validated['content'],
                 'status' => 0,
                 'is_premium' => 0,
-                'price' => $validated['price'],
                 'latitude' => $validated['latitude'],
                 'longitude' => $validated['longitude'],
                 'city' => $this->getAddressFromLatLong($validated['latitude'], $validated['longitude'])->original['address']
             ]);
 
-            $images = $validated['image'];
-            foreach ($images as $image) {
-                $imagePost = PostImage::create([
+            if (is_array($request->image)) {
+                $arrayIndex = 0;
+                foreach ($request->image as $image) {
+                    $imageName = $post->id.time().'_' . $arrayIndex++.'.'.$image->extension();
+                    $image->move(public_path('images'), $imageName);
+                    $image = PostImage::create([
+                        'post_id' => $post->id,
+                        'image_name' => $imageName
+                    ]);
+                }
+            } else {
+                $imageName = time().'.'.$request->image->extension();
+                $request->image->move(public_path('images'), $imageName);
+                $image = PostImage::create([
                     'post_id' => $post->id,
-                    'image_name' => $image
+                    'image_name' => $imageName
                 ]);
             }
-            $post->image_id = $imagePost->post_id;
+
             return response()->json([
                 'message' => 'Post created successfully',
-                'post' => $post
-            ], 200);
+                'post' => $post,
+                'first_image' => $image
+            ], 201);
         }
         return response()->json([
             'message' => 'Invalid request',
@@ -49,15 +60,35 @@ class PostController extends Controller
     protected function uploadImage(Request $request) {
         $validated = $request->validate([
             'post_id' => 'required|integer',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+            'image.*' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
+        $uploaded = [];
         if ($validated) {
-            $imageName = time().'.'.$request->image->extension();
-            $request->image->move(public_path('images'), $imageName);
+            if (is_array($request->image)) {
+                $arrayIndex = 0;
+                foreach ($request->image as $image) {
+                    $imageName = $request['post_id'].time().'_' . $arrayIndex++.'.'.$image->extension();
+                    $image->move(public_path('images'), $imageName);
+                    $image = PostImage::create([
+                        'post_id' => $validated['post_id'],
+                        'image_name' => $imageName
+                    ]);
+                    array_push($uploaded, $image);
+                }
+            } else {
+                $imageName = time().'.'.$request->image->extension();
+                $request->image->move(public_path('images'), $imageName);
+                $image = PostImage::create([
+                    'post_id' => $validated['post_id'],
+                    'image_name' => $imageName
+                ]);
+                array_push($uploaded, $image);
+            }
+
             return response()->json([
                 'message' => 'Image uploaded successfully',
-                'image_name' => $imageName
-            ], 200);
+                'image' => $uploaded
+            ], 201);
         }
         return response()->json([
             'message' => 'Invalid request',
