@@ -20,6 +20,7 @@ class PostController extends Controller
                 'title' => $validated['title'],
                 'content' => $validated['content'],
                 'status' => 0,
+                'price' => $validated['price'],
                 'is_premium' => 0,
                 'latitude' => $validated['latitude'],
                 'longitude' => $validated['longitude'],
