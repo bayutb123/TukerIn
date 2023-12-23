@@ -16,6 +16,7 @@ Route::post('/user/update', [UserController::class, 'update']);
 Route::post('/post/create', [PostController::class, 'create']);
 Route::post('/post/uploadImage', [PostController::class, 'uploadImage']);
 Route::get('/post/all/{userId}', [PostController::class, 'getPosts']);
+Route::get('/my/post/all/{id}', [PostController::class, 'getMyPosts']);
 Route::get('/post/get/{id}', [PostController::class, 'getPost']);
 Route::get('/post/search/{query}/{id}', [PostController::class, 'searchPost']);
 Route::get('/post/search/suggestion/{query}/{id}', [PostController::class, 'searchSuggestion']);

@@ -147,6 +147,26 @@ class PostController extends Controller
         ], 200);
     }
 
+    protected function getMyPosts($user_id, $limit = 10) {
+        $posts = Post::where('user_id', "==", $user_id)->orderBy('created_at', 'desc')->paginate($limit);
+        foreach ($posts as $post) {
+            $post->thumnail = PostImage::where('post_id', $post->id)->first();
+            $post->author = User::where('id', $post->user_id)->first();
+        }
+        
+
+        return response()->json([
+            'message' => 'Posts found',
+            'posts' => $posts,
+            'pagination' => [
+                'current_page' => $posts->currentPage(),
+                'last_page' => $posts->lastPage(),
+                'per_page' => $posts->perPage(),
+                'total' => $posts->total()
+            ]
+        ], 200);
+    }
+
     protected function getPosts($user_id, $limit = 10) {
         $posts = Post::where('user_id', "!=", $user_id)->orderBy('created_at', 'desc')->paginate($limit);
         foreach ($posts as $post) {
