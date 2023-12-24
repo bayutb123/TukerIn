@@ -102,4 +102,20 @@ class ChatController extends Controller
             'message' => 'Invalid request',
         ], 400);
     }
+
+    public function readMessage($chatId, $userId)
+    {
+        $messages = $this->message->where('chat_id', $chatId)->where('receiver_id', $userId)->get();
+
+        foreach ($messages as $message) {
+            if ($message->is_read == 0) {
+                $message->is_read = 1;
+                $message->save();
+            }
+        }
+
+        return response()->json([
+            'message' => 'Message read successfully',
+        ], 200);
+    }
 }
