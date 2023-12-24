@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\SavedPostController;
+use App\Http\Controllers\ChatController;
 
 
 Route::post('/user/register', [RegisterController::class, 'create']);
@@ -26,3 +27,10 @@ Route::delete('/post/delete/{id}', [PostController::class, 'deletePost']);
 Route::post('/post/save', [SavedPostController::class, 'savePost']);
 Route::get('/post/saved/{id}', [SavedPostController::class, 'getSavedPosts']);
 Route::delete('/post/saved/delete/{userId}/{postId}', [SavedPostController::class, 'deleteSavedPost']);
+
+Route::get('/message/chats/{userId}', [ChatController::class, 'getChats']);
+Route::get('/message/messages/{chatId}', [ChatController::class, 'getMessages']);
+Route::post('/message/create', [ChatController::class, 'createChat']);
+Route::post('/message/send', [ChatController::class, 'sendMessage']);
+Route::post('/message/image/upload', [ChatController::class, 'uploadImage']);
+

@@ -78,7 +78,7 @@ class PostController extends Controller
                 }
             } else {
                 $imageName = time().'.'.$request->image->extension();
-                $request->image->move(public_path('images'), $imageName);
+                $request->image->move(public_path('images/post'), $imageName);
                 $image = PostImage::create([
                     'post_id' => $validated['post_id'],
                     'image_name' => $imageName
@@ -93,7 +93,6 @@ class PostController extends Controller
         }
         return response()->json([
             'message' => 'Invalid request',
-            'errors' => $validated->errors()
         ], 400);
     }
 
