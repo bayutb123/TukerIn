@@ -31,7 +31,10 @@ class ChatController extends Controller
             $chat->last_message = $this->message->where('chat_id', $chat->id)->orderBy('created_at', 'desc')->first();
         }
 
-        return response()->json($chats);
+        return response()->json([
+            'message' => 'Chats retrieved successfully',
+            'data' => $chats,
+        ]);
     }
 
     public function getMessages($chatId)
@@ -42,7 +45,10 @@ class ChatController extends Controller
             $message->attachments = MessageImage::where('message_id', $message->id)->get();
         });
 
-        return response()->json($messages);
+        return response()->json([
+            'message' => 'Messages retrieved successfully',
+            'data' => $messages,
+        ]);
     }
 
     public function createChat(CreateChatRequest $request)
@@ -50,7 +56,10 @@ class ChatController extends Controller
 
         $chat = $this->chat->create($request->all());
 
-        return response()->json($chat);
+        return response()->json([
+            'message' => 'Chat created successfully',
+            'data' => $chat,
+        ], 201);
     }
 
     public function sendMessage(SendMessageRequest $request)
@@ -89,18 +98,6 @@ class ChatController extends Controller
         }
 
         
-    }
-
-    protected function uploadImage(Request $request)
-    {
-        $validated = $request->validate([
-            'message_id' => 'required|integer',
-            'image.*' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
-        ]);
-        
-        return response()->json([
-            'message' => 'Invalid request',
-        ], 400);
     }
 
     public function readMessage($chatId, $userId)
