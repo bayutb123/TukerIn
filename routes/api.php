@@ -33,6 +33,6 @@ Route::get('/message/messages/{chatId}', [ChatController::class, 'getMessages'])
 Route::post('/message/create', [ChatController::class, 'createChat']);
 Route::post('/message/send', [ChatController::class, 'sendMessage']);
 Route::post('/message/image/upload', [ChatController::class, 'uploadImage']);
-Route::put('/message/read/{chatId}/{userId}', [ChatController::class, 'readMessage']);
+Route::put('/message/read/{userId}/{chatId}', [ChatController::class, 'readMessage']);
 
 
