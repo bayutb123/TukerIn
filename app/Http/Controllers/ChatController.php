@@ -81,14 +81,6 @@ class ChatController extends Controller
                     ]);
                     array_push($uploaded, $image);
                 }
-            } else {
-                $imageName = time() . '.' . $request->image->extension();
-                $request->image->move(public_path('images'), $imageName);
-                $image = MessageImage::create([
-                    'message_id' => $message->id,
-                    'image' => $imageName
-                ]);
-                array_push($uploaded, $image);
             }
 
             return response()->json([
