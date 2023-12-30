@@ -25,12 +25,15 @@ class ChatController extends Controller
 
     public function getChats($userId)
     {
-        $chats = $this->chat->where('user_id', $userId)->orWhere('receiver_id', $userId)->get();
+        $chats = $this->chat->where('user_id', $userId)->orWhere('receiver_id', $userId)->orderBy(
+            'updated_at',
+            'desc'
+        )->get();
         foreach ($chats as $chat) {
             $chat->receiver = $this->user->find($chat->receiver_id);
-            $chat->last_message = $this->message->where('chat_id', $chat->id)->orderBy('created_at', 'desc')->first();
+            $chat->last_message = $this->message->where('chat_id', $chat->id)->orderBy('id', 'desc')->first();
         }
-
+        
         return response()->json([
             'message' => 'Chats retrieved successfully',
             'data' => $chats,
@@ -67,6 +70,10 @@ class ChatController extends Controller
         $validated = $request->validated();
 
         $message = $this->message->create($request->all());
+
+        $chat = $this->chat->find($request->chat_id);
+        $chat->updated_at = $message->created_at;
+        $chat->save();
 
         $uploaded = [];
         if ($validated) {
