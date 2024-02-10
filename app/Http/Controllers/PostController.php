@@ -15,6 +15,9 @@ class PostController extends Controller
     protected function create(CreatePostRequest $request) {
         $validated = $request->validated();
         if ($validated) {
+            // replace quoets with empty string on title and desc
+            $validated['title'] = str_replace('"', '', $validated['title']);
+            $validated['content'] = str_replace('"', '', $validated['content']);
             $post = Post::create([
                 'user_id' => $validated['user_id'],
                 'title' => $validated['title'],
