@@ -99,15 +99,22 @@ class PostController extends Controller
         ], 400);
     }
 
-    protected function searchPost($query, $id) {
-        $posts = Post::where('title', 'LIKE', "%{$query}%")->where('user_id', '!=', $id)->get();
+    protected function searchPost($query, $id, $limit = 10) {
+        $posts = Post::where('title', 'LIKE', "%{$query}%")->where('user_id', '!=', $id)->paginate(10);
         foreach ($posts as $post) {
             $post->thumnail = PostImage::where('post_id', $post->id)->first();
             $post->author = User::where('id', $post->user_id)->first();
         }
+
         return response()->json([
             'message' => 'Posts found',
-            'posts' => $posts
+            'posts' => $posts->items(),
+            'pagination' => [
+                'current_page' => $posts->currentPage(),
+                'last_page' => $posts->lastPage(),
+                'per_page' => $posts->perPage(),
+                'total' => $posts->total()
+            ]
         ], 200);
     }
 
@@ -150,16 +157,15 @@ class PostController extends Controller
     }
 
     protected function getMyPosts($user_id, $limit = 10) {
-        $posts = Post::where('user_id', "==", $user_id)->orderBy('created_at', 'desc')->paginate($limit);
+        $posts = Post::where('user_id', $user_id)->orderBy('created_at', 'desc')->paginate($limit);
         foreach ($posts as $post) {
             $post->thumnail = PostImage::where('post_id', $post->id)->first();
             $post->author = User::where('id', $post->user_id)->first();
         }
-        
 
         return response()->json([
             'message' => 'Posts found',
-            'posts' => $posts,
+            'posts' => $posts->items(),
             'pagination' => [
                 'current_page' => $posts->currentPage(),
                 'last_page' => $posts->lastPage(),
@@ -170,28 +176,28 @@ class PostController extends Controller
     }
 
     protected function getPosts($user_id, $limit = 10) {
-        $posts = Post::where('user_id', "!=", $user_id)->orderBy('created_at', 'desc')->paginate($limit);
-        foreach ($posts as $post) {
+        $_posts = Post::where('user_id', "!=", $user_id)->orderBy('created_at', 'desc')->paginate($limit);
+        foreach ($_posts as $post) {
             $post->thumnail = PostImage::where('post_id', $post->id)->first();
             $post->author = User::where('id', $post->user_id)->first();
         }
         // premium post are shown first
-        $premium_posts = $posts->where('is_premium', 1)->sortByDesc('id');
+        $premium_posts = $_posts->where('is_premium', 1)->sortByDesc('id');
 
         // standard post are shown after premium posts and ordered by id by desc
-        $standard_posts = $posts->where('is_premium', 0)->sortByDesc('id');
+        $standard_posts = $_posts->where('is_premium', 0)->sortByDesc('id');
 
         // combine premium and all posts
-        $all_posts = $premium_posts->merge($standard_posts);
+        $posts = $premium_posts->merge($standard_posts);
 
         return response()->json([
             'message' => 'Posts found',
-            'posts' => $all_posts,
+            'posts' => $posts,
             'pagination' => [
-                'current_page' => $posts->currentPage(),
-                'last_page' => $posts->lastPage(),
-                'per_page' => $posts->perPage(),
-                'total' => $posts->total()
+                'current_page' => $_posts->currentPage(),
+                'last_page' => $_posts->lastPage(),
+                'per_page' => $_posts->perPage(),
+                'total' => $_posts->total()
             ]
         ], 200);
     }
