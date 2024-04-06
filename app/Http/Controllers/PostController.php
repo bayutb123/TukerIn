@@ -26,6 +26,7 @@ class PostController extends Controller
                 'status' => 0,
                 'price' => $validated['price'],
                 'is_premium' => 0,
+                'can_trade_in' => $validated['can_trade_in'],
                 'latitude' => $validated['latitude'],
                 'longitude' => $validated['longitude'],
                 'city' => $this->getAddressFromLatLong($validated['latitude'], $validated['longitude'])->original['address']
