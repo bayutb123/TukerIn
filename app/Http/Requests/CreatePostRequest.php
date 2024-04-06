@@ -31,6 +31,7 @@ class CreatePostRequest extends FormRequest
             'is_premium' => 'integer',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
+            'type' => 'required|string',
         ];
     }
 }

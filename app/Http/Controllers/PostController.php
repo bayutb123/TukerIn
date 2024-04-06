@@ -22,6 +22,7 @@ class PostController extends Controller
                 'user_id' => $validated['user_id'],
                 'title' => $validated['title'],
                 'content' => $validated['content'],
+                'type' => $validated['type'],
                 'status' => 0,
                 'price' => $validated['price'],
                 'is_premium' => 0,

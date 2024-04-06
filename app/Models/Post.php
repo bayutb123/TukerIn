@@ -27,6 +27,7 @@ class Post extends Model
         'latitude',
         'longitude',
         'city',
+        'type',
     ];
 
     /**
