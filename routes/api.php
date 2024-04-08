@@ -13,6 +13,7 @@ use App\Http\Controllers\ChatController;
 Route::post('/user/register', [RegisterController::class, 'create']);
 Route::post('/user/login', [LoginController::class, 'login']);
 Route::post('/user/update', [UserController::class, 'update']);
+Route::get('/user/get/{id}', [UserController::class, 'getUser']);
 
 Route::post('/post/create', [PostController::class, 'create']);
 Route::post('/post/uploadImage', [PostController::class, 'uploadImage']);

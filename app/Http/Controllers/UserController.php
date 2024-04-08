@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Rating;
 use Illuminate\Http\Request;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
@@ -34,5 +35,35 @@ class UserController extends Controller
             'message' => 'Invalid request',
             'errors' => $validated->errors()
         ], 400);
+    }
+
+    protected function getUser($id) {
+        $user = User::where('id', $id)->first();
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found',
+                'user' => null
+            ], 400);
+        }
+        $rating = Rating::where('user_id', $id)->get();
+        // count rating points
+        $ratingCount = count($rating);
+        $trxPoint = 0;
+        $ratingTotal = 0;
+        foreach ($rating as $rate) {
+            $trxPoint += $rate->points;
+            $ratingTotal += $rate->rating;
+        }
+        if ($ratingCount > 0) {
+            $ratingTotal = $ratingTotal / $ratingCount;
+        } else {
+            $ratingTotal = 0;
+        }
+        $user->rating = $ratingTotal;
+        $user->trx_points = $trxPoint;
+        return response()->json([
+            'message' => 'User found',
+            'user' => $user
+        ], 200);
     }
 }
