@@ -18,7 +18,7 @@ class PostController extends Controller
             // replace quoets with empty string on title and desc
             $validated['title'] = str_replace('"', '', $validated['title']);
             $validated['content'] = str_replace('"', '', $validated['content']);
-            $validated['type'] = str_replace('"', '', $validated['content']);
+            $validated['type'] = str_replace('"', '', $validated['type']);
             $post = Post::create([
                 'user_id' => $validated['user_id'],
                 'title' => $validated['title'],
