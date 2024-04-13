@@ -29,6 +29,9 @@ Route::post('/post/save', [SavedPostController::class, 'savePost']);
 Route::get('/post/saved/{id}', [SavedPostController::class, 'getSavedPosts']);
 Route::delete('/post/saved/delete/{userId}/{postId}', [SavedPostController::class, 'deleteSavedPost']);
 
+Route::get('/post/category/all', [PostController::class, 'getPostCategories']);
+Route::get('/post/category/{id}', [PostController::class, 'getPostSubCategories']);
+
 Route::get('/message/chats/{userId}', [ChatController::class, 'getChats']);
 Route::get('/message/messages/{chatId}', [ChatController::class, 'getMessages']);
 Route::post('/message/create', [ChatController::class, 'createChat']);

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\PostImage;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\User;
+use App\Models\PostCategory;
 use GuzzleHttp\Client;
 
 class PostController extends Controller
@@ -269,6 +270,36 @@ class PostController extends Controller
 
         return response()->json([
             'address' => $properties->city
+        ], 200);
+    }
+
+    protected function getPostCategories() {
+        $categories = PostCategory::all();
+        if (sizeof($categories) == 0) {
+            return response()->json([
+                'message' => 'Categories not found',
+                'categories' => $categories
+            ], 400);
+        }
+
+        return response()->json([
+            'message' => 'Categories found',
+            'categories' => $categories
+        ], 200);
+    }
+
+    protected function getPostSubCategories($id) {
+        $categories = PostCategory::where('parent_id', $id)->get();
+        if (sizeof($categories) == 0) {
+            return response()->json([
+                'message' => 'Categories not found',
+                'categories' => $categories
+            ], 400);
+        }
+
+        return response()->json([
+            'message' => 'Categories found',
+            'categories' => $categories
         ], 200);
     }
 
