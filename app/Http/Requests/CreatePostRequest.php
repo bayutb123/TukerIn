@@ -27,7 +27,6 @@ class CreatePostRequest extends FormRequest
             'content' => 'required|string',
             'price' => 'required|integer',
             'image.*' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp',
-            'status' => 'string|max:255',
             'is_premium' => 'integer',
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',

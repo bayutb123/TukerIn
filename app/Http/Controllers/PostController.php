@@ -27,7 +27,7 @@ class PostController extends Controller
                 'title' => $validated['title'],
                 'content' => $validated['content'],
                 'type' => $validated['type'],
-                'status' => $validated['status'] ? $validated['status'] : "active",
+                'status' => "active",
                 'price' => $validated['price'],
                 'is_premium' => 0,
                 'can_trade_in' => $validated['can_trade_in'],
