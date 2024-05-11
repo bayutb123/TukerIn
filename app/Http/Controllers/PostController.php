@@ -182,7 +182,7 @@ class PostController extends Controller
     }
 
     protected function getPosts($user_id, $limit = 10) {
-        $_posts = Post::where('user_id', "!=", $user_id)->orderBy('created_at', 'desc')->where('is_published', '==', 1)->paginate($limit);
+        $_posts = Post::where('user_id', "!=", $user_id)->where('is_published', '==', 1)->orderBy('created_at', 'desc')->paginate($limit);
         foreach ($_posts as $post) {
             $post->thumnail = PostImage::where('post_id', $post->id)->first();
             $post->author = User::where('id', $post->user_id)->first();
