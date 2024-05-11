@@ -106,7 +106,7 @@ class PostController extends Controller
     }
 
     protected function searchPost($query, $id, $limit = 10) {
-        $posts = Post::where('title', 'LIKE', "%{$query}%")->where('user_id', '!=', $id)->where('is_published', '==', 1)->paginate(10);
+        $posts = Post::where('title', 'LIKE', "%{$query}%")->where('user_id', '!=', $id)->where('is_published', 1)->paginate(10);
         foreach ($posts as $post) {
             $post->thumnail = PostImage::where('post_id', $post->id)->first();
             $post->author = User::where('id', $post->user_id)->first();
