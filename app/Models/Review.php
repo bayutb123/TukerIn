@@ -16,7 +16,8 @@ class Review extends Model
         'post_id',
         'post_owner_id',
         'review',
-        'rating'
+        'rating',
+        'point'
     ];  
     
     public function user()

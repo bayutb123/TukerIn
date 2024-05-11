@@ -322,7 +322,15 @@ class PostController extends Controller
         }
         $validated['post_owner_id'] = $post_owner;
         if ($validated) {
-            $review = Review::create($validated);
+            $review = Review::create(
+                [
+                    'user_id' => $validated['user_id'],
+                    'post_id' => $validated['post_id'],
+                    'post_owner_id' => $validated['post_owner_id'],
+                    'review' => $validated['review'],
+                    'rating' => $validated['rating'],
+                    'point' => $post->price * 1 / 100
+                ]);
             $post->status = 'reviewed';
             $post->is_published = 0;
             $post->save();
@@ -357,24 +365,31 @@ class PostController extends Controller
         ], 200);
     }
 
-    protected function getUserReviews($id) {
+    protected function getUserRating($id) {
         $reviews = Review::where('post_owner_id', $id)->get();
+        $points = 0;
+        $rating = 0;
+        $count = sizeof($reviews);
         if (sizeof($reviews) == 0) {
             return response()->json([
-                'message' => 'Reviews not found',
-                'reviews' => $reviews
+                'message' => 'Rating not found',
+                'count' => $count,
+                'rating' => $rating,
+                'points' => $points
             ], 400);
         }
         foreach ($reviews as $review) {
             $review->post = Post::where('id', $review->post_id)->first();
+            $points += $review->point;
+            $rating += $review->rating / sizeof($reviews);
         }
 
-        $count = sizeof($reviews);
 
         return response()->json([
-            'message' => 'Reviews found',
+            'message' => 'Rating found',
             'count' => $count,
-            'reviews' => $reviews
+            'rating' => $rating,
+            'points' => $points
         ], 200);
     }
 
