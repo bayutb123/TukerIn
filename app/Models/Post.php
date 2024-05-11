@@ -28,7 +28,8 @@ class Post extends Model
         'longitude',
         'city',
         'type',
-        'can_trade_in'
+        'can_trade_in',
+        'is_published'
     ];
 
     /**

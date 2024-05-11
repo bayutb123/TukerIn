@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreatePostRequest;
+use App\Http\Requests\ReviewPostRequest;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use App\Models\PostImage;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\User;
+use App\Models\Review;
 use App\Models\PostCategory;
 use GuzzleHttp\Client;
 
@@ -25,7 +27,7 @@ class PostController extends Controller
                 'title' => $validated['title'],
                 'content' => $validated['content'],
                 'type' => $validated['type'],
-                'status' => 0,
+                'status' => $validated['status'] ? $validated['status'] : "active",
                 'price' => $validated['price'],
                 'is_premium' => 0,
                 'can_trade_in' => $validated['can_trade_in'],
@@ -104,7 +106,7 @@ class PostController extends Controller
     }
 
     protected function searchPost($query, $id, $limit = 10) {
-        $posts = Post::where('title', 'LIKE', "%{$query}%")->where('user_id', '!=', $id)->paginate(10);
+        $posts = Post::where('title', 'LIKE', "%{$query}%")->where('user_id', '!=', $id)->where('is_published', '==', 1)->paginate(10);
         foreach ($posts as $post) {
             $post->thumnail = PostImage::where('post_id', $post->id)->first();
             $post->author = User::where('id', $post->user_id)->first();
@@ -124,7 +126,7 @@ class PostController extends Controller
 
     protected function searchSuggestion($query, $id) {
         // select max 10 posts with unique title
-        $posts = Post::where('title', 'LIKE', "%{$query}%")->where('user_id', '!=', $id)->get();
+        $posts = Post::where('title', 'LIKE', "%{$query}%")->where('user_id', '!=', $id)->where('is_published', '==', 1)->get();
         $posts = $posts->unique('title');
         $suggestions = [];
         foreach ($posts as $post) {
@@ -180,7 +182,7 @@ class PostController extends Controller
     }
 
     protected function getPosts($user_id, $limit = 10) {
-        $_posts = Post::where('user_id', "!=", $user_id)->orderBy('created_at', 'desc')->paginate($limit);
+        $_posts = Post::where('user_id', "!=", $user_id)->orderBy('created_at', 'desc')->where('is_published', '==', 1)->paginate($limit);
         foreach ($_posts as $post) {
             $post->thumnail = PostImage::where('post_id', $post->id)->first();
             $post->author = User::where('id', $post->user_id)->first();
@@ -300,6 +302,77 @@ class PostController extends Controller
         return response()->json([
             'message' => 'Categories found',
             'categories' => $categories
+        ], 200);
+    }
+
+    protected function createReview(ReviewPostRequest $request) {
+        $validated = $request->validated();
+        $post = Post::where('id', $validated['post_id'])->first();
+        $post_owner = $post->user_id;
+        if (!$post) {
+            return response()->json([
+                'message' => 'Post not found',
+            ], 404);
+        } elseif ($post->status == 'reviewed') {
+            return response()->json([
+                'message' => 'Post already reviewed',
+            ], 409);
+        }
+        $validated['post_owner_id'] = $post_owner;
+        if ($validated) {
+            $review = Review::create($validated);
+            $post->status = 'reviewed';
+            $post->is_published = 0;
+            $post->save();
+            return response()->json([
+                'message' => 'Review created successfully',
+                'review' => $review
+            ], 201);
+        }
+        return response()->json([
+            'message' => 'Invalid request',
+            'errors' => $validated->errors()
+        ], 400);
+    }
+
+    protected function getPostReviews($id) {
+        $reviews = Review::where('post_id', $id)->get();
+        if (sizeof($reviews) == 0) {
+            return response()->json([
+                'message' => 'Reviews not found',
+                'reviews' => $reviews
+            ], 400);
+        }
+        foreach ($reviews as $review) {
+            $review->user = User::where('id', $review->user_id)->first();
+            $review->post = Post::where('id', $review->post_id)->first();
+            $review->post_owner = User::where('id', $review->post_owner_id)->first();
+        }
+
+        return response()->json([
+            'message' => 'Reviews found',
+            'reviews' => $reviews
+        ], 200);
+    }
+
+    protected function getUserReviews($id) {
+        $reviews = Review::where('post_owner_id', $id)->get();
+        if (sizeof($reviews) == 0) {
+            return response()->json([
+                'message' => 'Reviews not found',
+                'reviews' => $reviews
+            ], 400);
+        }
+        foreach ($reviews as $review) {
+            $review->post = Post::where('id', $review->post_id)->first();
+        }
+
+        $count = sizeof($reviews);
+
+        return response()->json([
+            'message' => 'Reviews found',
+            'count' => $count,
+            'reviews' => $reviews
         ], 200);
     }
 

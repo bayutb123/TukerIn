@@ -14,6 +14,7 @@ Route::post('/user/register', [RegisterController::class, 'create']);
 Route::post('/user/login', [LoginController::class, 'login']);
 Route::post('/user/update', [UserController::class, 'update']);
 Route::get('/user/get/{id}', [UserController::class, 'getUser']);
+Route::get('/user/review/{id}', [PostController::class, 'getUserReviews']);
 
 Route::post('/post/create', [PostController::class, 'create']);
 Route::post('/post/uploadImage', [PostController::class, 'uploadImage']);
@@ -24,6 +25,8 @@ Route::get('/post/search/{query}/{id}', [PostController::class, 'searchPost']);
 Route::get('/post/search/suggestion/{query}/{id}', [PostController::class, 'searchSuggestion']);
 Route::put('/post/update', [PostController::class, 'updatePost']);
 Route::delete('/post/delete/{id}', [PostController::class, 'deletePost']);
+Route::get('/post/review/{id}', [PostController::class, 'getPostReviews']);
+Route::post('/post/review', [PostController::class, 'createReview']);
 
 Route::post('/post/save', [SavedPostController::class, 'savePost']);
 Route::get('/post/saved/{id}', [SavedPostController::class, 'getSavedPosts']);
