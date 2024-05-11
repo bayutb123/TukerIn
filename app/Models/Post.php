@@ -22,6 +22,7 @@ class Post extends Model
         'content',
         'price',
         'user_id',
+        'peer_id',
         'status',
         'is_premium',
         'latitude',

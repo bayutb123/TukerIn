@@ -393,4 +393,45 @@ class PostController extends Controller
         ], 200);
     }
 
+    protected function changePublishStatus(Request $request) {
+        $validated = $request->validate([
+            'post_id' => 'required|integer',
+            'peer_id' => 'required|integer',
+            'publish_status_id' => 'required|integer'
+        ]);
+        $post = Post::where('id', $validated['post_id'])->first();
+        if (!$post) {
+            return response()->json([
+                'message' => 'Post not found',
+            ], 404);
+        }
+        // replace "" from is_published and peer_id
+        $post->is_published = str_replace('"', '', $validated['publish_status_id']);
+        $post->peer_id = str_replace('"', '', $validated['peer_id']);
+        $post->save();
+        return response()->json([
+            'message' => 'Post set active successfully',
+            'post' => $post
+        ], 200);
+    }
+
+    protected function getActivePosts($peer_id) {
+        $posts = Post::where('peer_id', $peer_id)->where('is_published', '>', 1)->get();
+        if (sizeof($posts) == 0) {
+            return response()->json([
+                'message' => 'Posts not found',
+                'posts' => $posts
+            ], 400);
+        }
+        foreach ($posts as $post) {
+            $post->thumnail = PostImage::where('post_id', $post->id)->first();
+            $post->author = User::where('id', $post->user_id)->first();
+        }
+
+        return response()->json([
+            'message' => 'Posts found',
+            'posts' => $posts
+        ], 200);
+    }
+
 }
