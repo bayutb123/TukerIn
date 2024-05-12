@@ -283,7 +283,7 @@ class PostController extends Controller
             return response()->json([
                 'message' => 'Categories not found',
                 'categories' => $categories
-            ], 204);
+            ], 200);
         }
 
         return response()->json([
@@ -298,7 +298,7 @@ class PostController extends Controller
             return response()->json([
                 'message' => 'Categories not found',
                 'categories' => $categories
-            ], 204);
+            ], 200);
         }
 
         return response()->json([
@@ -351,7 +351,7 @@ class PostController extends Controller
             return response()->json([
                 'message' => 'Reviews not found',
                 'reviews' => $reviews
-            ], 204);
+            ], 200);
         }
         foreach ($reviews as $review) {
             $review->user = User::where('id', $review->user_id)->first();
@@ -376,7 +376,7 @@ class PostController extends Controller
                 'count' => $count,
                 'rating' => $rating,
                 'points' => $points
-            ], 204);
+            ], 200);
         }
         foreach ($reviews as $review) {
             $review->post = Post::where('id', $review->post_id)->first();
@@ -421,7 +421,7 @@ class PostController extends Controller
             return response()->json([
                 'message' => 'Posts not found',
                 'posts' => $posts
-            ], 204);
+            ], 200);
         }
 
         foreach ($posts as $post) {
