@@ -389,6 +389,7 @@ class PostController extends Controller
 
         return response()->json([
             'message' => 'Rating found',
+            'name' => $user_name,
             'count' => $count,
             'rating' => $rating,
             'points' => $points
