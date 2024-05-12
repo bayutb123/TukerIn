@@ -283,7 +283,7 @@ class PostController extends Controller
             return response()->json([
                 'message' => 'Categories not found',
                 'categories' => $categories
-            ], 400);
+            ], 204);
         }
 
         return response()->json([
@@ -298,7 +298,7 @@ class PostController extends Controller
             return response()->json([
                 'message' => 'Categories not found',
                 'categories' => $categories
-            ], 400);
+            ], 204);
         }
 
         return response()->json([
@@ -351,7 +351,7 @@ class PostController extends Controller
             return response()->json([
                 'message' => 'Reviews not found',
                 'reviews' => $reviews
-            ], 400);
+            ], 204);
         }
         foreach ($reviews as $review) {
             $review->user = User::where('id', $review->user_id)->first();
@@ -376,7 +376,7 @@ class PostController extends Controller
                 'count' => $count,
                 'rating' => $rating,
                 'points' => $points
-            ], 400);
+            ], 204);
         }
         foreach ($reviews as $review) {
             $review->post = Post::where('id', $review->post_id)->first();
@@ -421,8 +421,9 @@ class PostController extends Controller
             return response()->json([
                 'message' => 'Posts not found',
                 'posts' => $posts
-            ], 400);
+            ], 204);
         }
+
         foreach ($posts as $post) {
             $post->thumnail = PostImage::where('post_id', $post->id)->first();
             $post->author = User::where('id', $post->user_id)->first();
