@@ -427,6 +427,19 @@ class PostController extends Controller
         foreach ($posts as $post) {
             $post->thumnail = PostImage::where('post_id', $post->id)->first();
             $post->author = User::where('id', $post->user_id)->first();
+
+            $reviews = Review::where('post_owner_id', $post->user_id)->get();
+            $rating = 0;
+            $count = sizeof($reviews);
+            if (sizeof($reviews) == 0) {
+                $post->author->rating = $rating;
+            }
+
+            foreach ($reviews as $review) {
+                $rating += $review->rating;
+            }
+
+            $post->author->rating = $rating / $count;
         }
 
         return response()->json([
