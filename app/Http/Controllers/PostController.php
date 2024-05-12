@@ -433,13 +433,15 @@ class PostController extends Controller
             $count = sizeof($reviews);
             if (sizeof($reviews) == 0) {
                 $post->author->rating = $rating;
+            } else {
+                foreach ($reviews as $review) {
+                    $rating += $review->rating;
+                }
+    
+                $post->author->rating = $rating / $count;
             }
 
-            foreach ($reviews as $review) {
-                $rating += $review->rating;
-            }
-
-            $post->author->rating = $rating / $count;
+            
         }
 
         return response()->json([
