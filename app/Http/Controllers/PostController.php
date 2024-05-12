@@ -184,7 +184,7 @@ class PostController extends Controller
 
     protected function getPosts($user_id, $limit = 10) {
         // get all posts except user's posts abd only published posts
-        $_posts = Post::where('user_id', '!=', $user_id)->where('is_published', 1)->orderBy('created_at', 'desc')->paginate($limit);
+        $_posts = Post::where('user_id', '!=', $user_id)->where('is_published', '>', 0)->where('is_published', '<', 3)->orderBy('created_at', 'desc')->paginate($limit);
         foreach ($_posts as $post) {
             $post->thumnail = PostImage::where('post_id', $post->id)->first();
             $post->author = User::where('id', $post->user_id)->first();
