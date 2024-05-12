@@ -366,6 +366,7 @@ class PostController extends Controller
     }
 
     protected function getUserRating($id) {
+        $user_name = User::where('id', $id)->first()->name;
         $reviews = Review::where('post_owner_id', $id)->get();
         $points = 0;
         $rating = 0;
@@ -373,6 +374,7 @@ class PostController extends Controller
         if (sizeof($reviews) == 0) {
             return response()->json([
                 'message' => 'Rating not found',
+                'name' => $user_name,
                 'count' => $count,
                 'rating' => $rating,
                 'points' => $points
