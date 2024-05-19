@@ -28,7 +28,7 @@ Route::delete('/post/delete/{id}', [PostController::class, 'deletePost']);
 Route::get('/post/review/{id}', [PostController::class, 'getPostReviews']);
 Route::post('/post/review', [PostController::class, 'createReview']);
 Route::get('/post/active/{id}', [PostController::class, 'getActivePosts']);
-Route::put('/post/update/publish/status', [PostController::class, 'changePublishStatus']);
+Route::post('/post/update/publish/status', [PostController::class, 'changePublishStatus']);
 
 Route::post('/post/save', [SavedPostController::class, 'savePost']);
 Route::get('/post/saved/{id}', [SavedPostController::class, 'getSavedPosts']);
