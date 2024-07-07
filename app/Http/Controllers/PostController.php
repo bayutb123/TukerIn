@@ -419,7 +419,7 @@ class PostController extends Controller
     }
 
     protected function getActivePosts($peer_id) {
-        $posts = Post::where('peer_id', $peer_id)->where('is_published', '>', 1)->get();
+        $posts = Post::where('peer_id', $peer_id)->where('is_published', '>', 1)->where('is_published', '<', 5)->get();
         if (sizeof($posts) == 0) {
             return response()->json([
                 'message' => 'Posts not found',
