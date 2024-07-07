@@ -106,7 +106,7 @@ class PostController extends Controller
     }
 
     protected function searchPost($query, $id, $limit = 10) {
-        $posts = Post::where('title', 'LIKE', "%{$query}%")->where('user_id', '!=', $id)->where('is_published', 1)->paginate(10);
+        $posts = Post::where('title', 'LIKE', "%{$query}%")->where('user_id', '!=', $id)->where('is_published', '>', 0)->where('is_published', '<', 3)->paginate(10);
         foreach ($posts as $post) {
             $post->thumnail = PostImage::where('post_id', $post->id)->first();
             $post->author = User::where('id', $post->user_id)->first();
@@ -126,7 +126,7 @@ class PostController extends Controller
 
     protected function searchSuggestion($query, $id) {
         // select max 10 posts with unique title and is_published
-        $posts = Post::where('title', 'LIKE', "%{$query}%")->where('user_id', '!=', $id)->where('is_published', 1)->get();
+        $posts = Post::where('title', 'LIKE', "%{$query}%")->where('user_id', '!=', $id)->where('is_published', '>', 0)->where('is_published', '<', 3)->get();
 
         $posts = $posts->unique('title');
         $suggestions = [];
