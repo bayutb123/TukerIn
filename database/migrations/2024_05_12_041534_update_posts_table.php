@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::table('posts', function (Blueprint $table) {
             // add peer_id column
             $table->unsignedBigInteger('peer_id')->after('user_id')->nullable();
-            $table->foreign('peer_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
