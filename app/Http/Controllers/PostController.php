@@ -367,11 +367,12 @@ class PostController extends Controller
 
     protected function getUserRating($id) {
         $user_name = User::where('id', $id)->first()->name;
-        $reviews = Review::where('post_owner_id', $id)->orWhere('user_id', $id)->get();
+        $reviewsPoints = Review::where('post_owner_id', $id)->orWhere('user_id', $id)->get();
+        $reviewsRating = Review::where('post_owner_id', $id)->get();
         $points = 0;
         $rating = 0;
-        $count = sizeof($reviews);
-        if (sizeof($reviews) == 0) {
+        $count = sizeof($reviewsPoints);
+        if (sizeof($reviewsPoints) == 0) {
             return response()->json([
                 'message' => 'Rating not found',
                 'name' => $user_name,
@@ -380,10 +381,14 @@ class PostController extends Controller
                 'points' => $points
             ], 200);
         }
-        foreach ($reviews as $review) {
+        foreach ($reviewsPoints as $review) {
             $review->post = Post::where('id', $review->post_id)->first();
             $points += $review->point;
-            $rating += $review->rating / sizeof($reviews);
+        }
+
+        foreach ($reviewsRating as $review) {
+            $review->post = Post::where('id', $review->post_id)->first();
+            $rating += $review->rating / sizeof($reviewsRating);
         }
 
 
