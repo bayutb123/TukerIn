@@ -367,7 +367,7 @@ class PostController extends Controller
 
     protected function getUserRating($id) {
         $user_name = User::where('id', $id)->first()->name;
-        $reviews = Review::where('post_owner_id', $id)->get();
+        $reviews = Review::where('post_owner_id', $id)->orWhere('user_id', $id)->get();
         $points = 0;
         $rating = 0;
         $count = sizeof($reviews);
