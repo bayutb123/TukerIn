@@ -371,7 +371,7 @@ class PostController extends Controller
         $reviewsRating = Review::where('post_owner_id', $id)->get();
         $points = 0;
         $rating = 0;
-        $count = sizeof($reviewsPoints);
+        $count = sizeof($reviewsRating);
         if (sizeof($reviewsPoints) == 0) {
             return response()->json([
                 'message' => 'Rating not found',
