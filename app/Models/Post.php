@@ -30,7 +30,8 @@ class Post extends Model
         'city',
         'type',
         'can_trade_in',
-        'is_published'
+        'is_published',
+        'phone',
     ];
 
     /**
