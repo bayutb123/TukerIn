@@ -34,6 +34,7 @@ class RegisterRequest extends FormRequest
                 'string',
                 'min:8',
             ],
+            'phone' => 'required|string|max:14',
         ];
     }
 }
