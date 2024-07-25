@@ -33,7 +33,6 @@ class CreatePostRequest extends FormRequest
             'type' => 'required|string',
             'can_trade_in' => 'required|integer',
             'is_published' => 'integer',
-            'phone' => 'required|string|max:14',
         ];
     }
 }
