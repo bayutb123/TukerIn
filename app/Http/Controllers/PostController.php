@@ -157,6 +157,7 @@ class PostController extends Controller
         $post->images = $images->pluck('image_name');
         $post->author_name = $author->name;
         $post->author_email = $author->email;
+        $post->author_phone = $author->phone;
         return response()->json([
             'message' => 'Post found',
             'post' => $post,
