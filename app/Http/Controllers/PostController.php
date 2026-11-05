@@ -70,7 +70,7 @@ class PostController extends Controller
     protected function uploadImage(Request $request) {
         $validated = $request->validate([
             'post_id' => 'required|integer',
-            'image.*' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+            'image.*' => 'required|image:allow_svg|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
         $uploaded = [];
         if ($validated) {

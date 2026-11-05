@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('posts', function (Blueprint $table) {
             // change the status column to string
-            $table->string('status')->change();
+            $table->string('status')->default('0')->change();
             $table->integer('is_published')->after('status')->default(1);
         });
     }
@@ -25,7 +25,7 @@ return new class extends Migration
     {
         Schema::table('posts', function (Blueprint $table) {
             // change the status column to integer
-            $table->integer('status')->change();
+            $table->integer('status')->default(0)->change();
             $table->dropColumn('is_published');
         });
     }
