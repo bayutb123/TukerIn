@@ -29,8 +29,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function ($table) {
+            $table->dropUnique(['api_token']);
             $table->dropColumn('api_token');
             $table->renameColumn('verified_at', 'email_verified_at');
+            $table->dropColumn('is_premium_user');
             $table->dropColumn('profile_photo_path');
         });
     }
