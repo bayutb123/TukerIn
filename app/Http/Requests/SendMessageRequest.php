@@ -25,7 +25,7 @@ class SendMessageRequest extends FormRequest
             'chat_id' => 'required|exists:chats,id',
             'sender_id' => 'required|exists:users,id',
             'receiver_id' => 'required|exists:users,id',
-            'image.*' => 'image|mimes:jpeg,png,jpg,gif,svg',
+            'image.*' => 'image:allow_svg|mimes:jpeg,png,jpg,gif,svg',
             'message' => 'string',
         ];
     }
