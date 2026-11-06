@@ -10,6 +10,16 @@ class Post extends Model
 {
     use HasFactory, SoftDeletes;
 
+    /**
+     * Values of is_published. They match the PublishStatus enum in the app,
+     * which sends its ordinal.
+     */
+    public const STATUS_NOT_PUBLISHED = 0;
+    public const STATUS_PUBLISHED = 1;
+    public const STATUS_TRANSACTION_PENDING = 2;
+    public const STATUS_TRANSACTION_COMPLETED = 3;
+    public const STATUS_NEEDS_REVIEW = 4;
+    public const STATUS_CLOSED = 5;
 
     /**
      * The attributes that are mass assignable.

@@ -416,7 +416,7 @@ class PostController extends Controller
         $validated = $request->validate([
             'post_id' => 'required|integer',
             'peer_id' => 'required|integer',
-            'publish_status_id' => 'required|integer'
+            'publish_status_id' => 'required|integer|between:'.Post::STATUS_NOT_PUBLISHED.','.Post::STATUS_CLOSED,
         ]);
         $post = Post::where('id', $validated['post_id'])->first();
         if (!$post) {
@@ -424,9 +424,24 @@ class PostController extends Controller
                 'message' => 'Post not found',
             ], 404);
         }
-        // replace "" from is_published and peer_id
-        $post->is_published = str_replace('"', '', $validated['publish_status_id']);
-        $post->peer_id = str_replace('"', '', $validated['peer_id']);
+
+        // The caller always records themselves as the trading peer.
+        $this->ensureIsCurrentUser($validated['peer_id']);
+
+        $userId = (int) auth()->id();
+        $status = (int) $validated['publish_status_id'];
+        $isOwner = (int) $post->user_id === $userId;
+        $isCurrentPeer = $post->peer_id !== null && (int) $post->peer_id === $userId;
+        // Anyone may start a trade on a post; after that, only the owner and
+        // the user trading with them may move it on.
+        abort_unless(
+            $isOwner || $isCurrentPeer || $status === Post::STATUS_TRANSACTION_PENDING,
+            403,
+            'Only the post owner or the user trading on it can change its status.'
+        );
+
+        $post->is_published = $status;
+        $post->peer_id = (int) $validated['peer_id'];
         $post->save();
         return response()->json([
             'message' => 'Post set active successfully',
