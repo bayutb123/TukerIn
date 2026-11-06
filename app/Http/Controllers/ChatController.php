@@ -55,7 +55,13 @@ class ChatController extends Controller
 
     public function getMessages($chatId)
     {
-        $this->ensureIsParticipant($this->chat->findOrFail($chatId));
+        $chat = $this->chat->find($chatId);
+        if (!$chat) {
+            return response()->json([
+                'message' => 'Chat not found',
+            ], 404);
+        }
+        $this->ensureIsParticipant($chat);
 
         $messages = $this->message->where('chat_id', $chatId)->get();
 

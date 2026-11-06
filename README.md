@@ -4,6 +4,8 @@ REST API for the TukerIn app: a marketplace where users post items to sell or tr
 
 Built with Laravel 13 (PHP 8.3+).
 
+> **Upgrading a client?** Since API authentication was added, every endpoint except register and login needs a token. See [UPGRADE.md](UPGRADE.md) for the breaking changes and how to migrate.
+
 - [Getting started](#getting-started)
 - [Conventions](#conventions)
 - [Users](#users)

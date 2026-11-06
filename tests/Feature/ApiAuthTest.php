@@ -197,6 +197,14 @@ class ApiAuthTest extends TestCase
         $this->as($this->bob)->getJson('/api/message/messages/'.$chat->id)->assertOk();
     }
 
+    public function test_reading_a_missing_chat_returns_404(): void
+    {
+        $this->as($this->alice)
+            ->getJson('/api/message/messages/999')
+            ->assertNotFound()
+            ->assertExactJson(['message' => 'Chat not found']);
+    }
+
     public function test_users_cannot_send_messages_as_someone_else(): void
     {
         $chat = $this->makeChat();
