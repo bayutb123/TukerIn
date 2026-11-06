@@ -25,6 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('chats', function (Blueprint $table) {
+            $table->dropForeign(['context']);
             $table->dropColumn('context');
         });
     }
