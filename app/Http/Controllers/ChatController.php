@@ -23,8 +23,21 @@ class ChatController extends Controller
         $this->message = $message;
     }
 
+    /**
+     * Abort with 403 unless the authenticated user takes part in the chat.
+     */
+    protected function ensureIsParticipant(Chat $chat): void
+    {
+        abort_unless(
+            in_array((int) auth()->id(), [(int) $chat->user_id, (int) $chat->receiver_id], true),
+            403,
+            'You are not a participant of this chat.'
+        );
+    }
+
     public function getChats($userId)
     {
+        $this->ensureIsCurrentUser($userId);
         $chats = $this->chat->where('user_id', $userId)->orWhere('receiver_id', $userId)->orderBy(
             'updated_at',
             'desc'
@@ -42,6 +55,14 @@ class ChatController extends Controller
 
     public function getMessages($chatId)
     {
+        $chat = $this->chat->find($chatId);
+        if (!$chat) {
+            return response()->json([
+                'message' => 'Chat not found',
+            ], 404);
+        }
+        $this->ensureIsParticipant($chat);
+
         $messages = $this->message->where('chat_id', $chatId)->get();
 
         $messages->map(function ($message) {
@@ -56,6 +77,7 @@ class ChatController extends Controller
 
     public function createChat(CreateChatRequest $request)
     {
+        $this->ensureIsCurrentUser($request->validated()['user_id']);
 
         $chat = $this->chat->create($request->all());
 
@@ -68,10 +90,12 @@ class ChatController extends Controller
     public function sendMessage(SendMessageRequest $request)
     {
         $validated = $request->validated();
+        $this->ensureIsCurrentUser($validated['sender_id']);
+        $chat = $this->chat->find($validated['chat_id']);
+        $this->ensureIsParticipant($chat);
 
         $message = $this->message->create($request->all());
 
-        $chat = $this->chat->find($request->chat_id);
         $chat->updated_at = $message->created_at;
         $chat->save();
 
@@ -99,8 +123,36 @@ class ChatController extends Controller
         
     }
 
+    public function uploadImage(Request $request)
+    {
+        $validated = $request->validate([
+            'message_id' => 'required|integer|exists:messages,id',
+            'image' => 'required|array',
+            'image.*' => 'required|image:allow_svg|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        $message = $this->message->find($validated['message_id']);
+        $this->ensureIsCurrentUser($message->sender_id);
+
+        $uploaded = [];
+        foreach ($request->file('image') as $index => $image) {
+            $imageName = $message->id . time() . '_' . $index . '.' . $image->extension();
+            $image->move(public_path('images/message'), $imageName);
+            $uploaded[] = MessageImage::create([
+                'message_id' => $message->id,
+                'image' => $imageName,
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Image uploaded successfully',
+            'data' => $uploaded,
+        ], 201);
+    }
+
     public function readMessage($chatId, $userId)
     {
+        $this->ensureIsCurrentUser($userId);
         $messages = $this->message->where('chat_id', $chatId)->where('receiver_id', $userId)->get();
 
         foreach ($messages as $message) {

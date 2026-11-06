@@ -18,6 +18,7 @@ class PostController extends Controller
     protected function create(CreatePostRequest $request) {
         $validated = $request->validated();
         if ($validated) {
+            $this->ensureIsCurrentUser($validated['user_id']);
             // replace quoets with empty string on title and desc
             $validated['title'] = str_replace('"', '', $validated['title']);
             $validated['content'] = str_replace('"', '', $validated['content']);
@@ -72,6 +73,13 @@ class PostController extends Controller
             'post_id' => 'required|integer',
             'image.*' => 'required|image:allow_svg|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
+        $post = Post::find($validated['post_id']);
+        if (!$post) {
+            return response()->json([
+                'message' => 'Post not found',
+            ], 404);
+        }
+        $this->ensureIsCurrentUser($post->user_id);
         $uploaded = [];
         if ($validated) {
             if (is_array($request->image)) {
@@ -213,13 +221,14 @@ class PostController extends Controller
 
     protected function deletePost($id) {
         $post = Post::where('id', $id)->first();
-        $images = PostImage::where('post_id', $post->id)->get();
         if (!$post) {
             return response()->json([
                 'message' => 'Post not found',
                 'post' => null
             ], 400);
         }
+        $this->ensureIsCurrentUser($post->user_id);
+        $images = PostImage::where('post_id', $post->id)->get();
         foreach ($images as $image) {
             $image->delete();
         }
@@ -240,6 +249,7 @@ class PostController extends Controller
                     'post' => null
                 ], 400);
             }
+            $this->ensureIsCurrentUser($post->user_id);
             $post->title = $validated['title'];
             $post->content = $validated['content'] ? $validated['content'] : $post->content;
             if ($validated['status']) {
@@ -310,8 +320,8 @@ class PostController extends Controller
 
     protected function createReview(ReviewPostRequest $request) {
         $validated = $request->validated();
+        $this->ensureIsCurrentUser($validated['user_id']);
         $post = Post::where('id', $validated['post_id'])->first();
-        $post_owner = $post->user_id;
         if (!$post) {
             return response()->json([
                 'message' => 'Post not found',
@@ -321,14 +331,14 @@ class PostController extends Controller
                 'message' => 'Post already reviewed',
             ], 409);
         }
-        $validated['post_owner_id'] = $post_owner;
+        $validated['post_owner_id'] = $post->user_id;
         if ($validated) {
             $review = Review::create(
                 [
                     'user_id' => $validated['user_id'],
                     'post_id' => $validated['post_id'],
                     'post_owner_id' => $validated['post_owner_id'],
-                    'review' => $validated['review'],
+                    'review' => $validated['review'] ?? null,
                     'rating' => $validated['rating'],
                     'point' => $post->price * 1 / 100
                 ]);
