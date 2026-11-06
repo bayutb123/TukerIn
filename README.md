@@ -98,11 +98,14 @@ Paginated endpoints return 10 items per page, accept a `?page=` query parameter,
 
 `is_published` is an integer that controls where a post appears:
 
-| Value | Shown in |
-|---|---|
-| `0` | Hidden. Set automatically once the post has been reviewed. |
-| `1`, `2` | The public feed and search (`GET /post/all`, `GET /post/search`). |
-| `2`, `3`, `4` | A peer's active posts (`GET /post/active/{peerId}`). |
+| Value | Name in the app | Shown in |
+|---|---|---|
+| `0` | `NOT_PUBLISHED` | Hidden. Also set automatically once the post has been reviewed. |
+| `1` | `PUBLISHED` | The public feed and search (`GET /post/all`, `GET /post/search`). |
+| `2` | `TRANSACTION_PENDING` | The feed and search, and the peer's active posts (`GET /post/active/{peerId}`). |
+| `3` | `TRANSACTION_COMPLETED` | The peer's active posts. |
+| `4` | `NEEDS_REVIEW` | The peer's active posts. |
+| `5` | `CLOSED` | Hidden. |
 
 Change it with [`POST /post/update/publish/status`](#change-publish-status).
 
@@ -300,12 +303,22 @@ Sets `is_published` and the trade peer (`peer_id`) of a post. See [Post publish 
 | Field | Rules |
 |---|---|
 | `post_id` | required, integer |
-| `peer_id` | required, integer: the user trading with the owner |
-| `publish_status_id` | required, integer: the new `is_published` value |
+| `peer_id` | required, integer: must be the logged-in user, who becomes the post's trading peer |
+| `publish_status_id` | required, integer `0`–`5`: the new `is_published` value |
+
+Who can change the status:
+
+- The **post's owner**: any status.
+- **Any logged-in user**: `2` (`TRANSACTION_PENDING`), to start a trade on someone else's post.
+- The **post's current peer** (the user in `peer_id`): any status, for example `5` (`CLOSED`) to finish the trade.
 
 **200**: `{ "message": "Post set active successfully", "post": { … } }`
 
+**403**: `peer_id` is not the logged-in user, or the user isn't allowed to set that status.
+
 **404**: `Post not found`
+
+**422**: `publish_status_id` is outside `0`–`5`.
 
 ### A peer's active posts
 

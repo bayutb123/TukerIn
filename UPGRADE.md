@@ -146,12 +146,12 @@ For chat endpoints the message is `"You are not a participant of this chat."`.
 | `POST /message/send` | `sender_id` must be the logged-in user, and they must be one of the chat's two users. |
 | `POST /message/image/upload` | The message must have been sent by the logged-in user. |
 | `PUT /message/read/{chatId}/{userId}` | `{userId}` must be the logged-in user. |
+| `POST /post/update/publish/status` | `peer_id` must be the logged-in user. Only the post's owner or its current peer may set a status, except `2` (`TRANSACTION_PENDING`), which anyone may set to start a trade. Added after PR #9; see the [README](README.md#change-publish-status). |
 
 These endpoints only need a valid token. They don't check whose data it is:
 
 - `GET /user/get/{id}`, `GET /user/rating/{id}`: profiles and ratings are public to logged-in users.
 - `GET /post/all/{userId}`, `GET /my/post/all/{userId}`, `GET /post/get/{id}`, `GET /post/search/…`, `GET /post/search/suggestion/…`, `GET /post/active/{peerId}`, `GET /post/review/{postId}`, `GET /post/category/…`.
-- `POST /post/update/publish/status`: see [Known limitations](#known-limitations).
 
 A well-behaved client already sends the logged-in user's own ID everywhere, and won't see any `403`. If one shows up during testing, it points to a bug in the app, such as a stale or wrong user ID.
 
@@ -237,7 +237,6 @@ Sending images directly with `POST /message/send` still works as before.
 
 These are not part of PR #9, but are worth knowing:
 
-- **`POST /post/update/publish/status` has no ownership check.** Any logged-in user can change any post's `is_published` and `peer_id`. It isn't clear whether only the owner, only the trade peer, or both should be allowed to, so it was left open. Once that's decided, it can be restricted.
 - **Tokens never expire or rotate**, and there is no logout endpoint that invalidates a token. "Logging out" in the app means deleting the stored token on the device. A leaked token stays valid until it is changed in the database.
 - **Tokens are stored in plain text** in `users.api_token`. Anyone with read access to the database can use them.
 - **Tokens issued before this change were exposed.** Before PR #9, every user's token was visible to other users in API responses. Nothing could be done with them while the API didn't check tokens, but they become usable once it does. To be safe, consider giving every user a new token when deploying, for example with `UPDATE users SET api_token = NULL` (or a new random value per user). Users then get a new token at their next login, but must log in again first.
