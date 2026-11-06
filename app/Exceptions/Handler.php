@@ -26,5 +26,11 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+
+        // API clients always get JSON errors (401, 403, 422, ...), even when
+        // they don't send "Accept: application/json".
+        $this->shouldRenderJsonWhen(function ($request, Throwable $e) {
+            return $request->is('api/*') || $request->expectsJson();
+        });
     }
 }

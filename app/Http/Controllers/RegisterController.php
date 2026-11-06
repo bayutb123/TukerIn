@@ -29,7 +29,7 @@ class RegisterController extends Controller
             ]);
             return response()->json([
                 'message' => 'User created successfully',
-                'user' => $registered,
+                'user' => $registered->makeVisible('api_token'),
             ], 201);
         }
 

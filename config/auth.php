@@ -41,6 +41,14 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // Authenticates API requests with the users.api_token issued at
+        // registration, sent as "Authorization: Bearer {api_token}".
+        'api' => [
+            'driver' => 'token',
+            'provider' => 'users',
+            'hash' => false,
+        ],
     ],
 
     /*

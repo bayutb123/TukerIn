@@ -55,7 +55,7 @@ vendor/bin/phpunit
 
 - **Base URL:** every endpoint below is relative to `{APP_URL}/api`.
 - **Request bodies:** send `application/x-www-form-urlencoded`, or `multipart/form-data` when uploading images. Send multiple images as `image[]`.
-- **`Accept: application/json`:** always send this header. If you leave it out, a failed validation redirects instead of returning JSON. With it, validation errors come back as `422` with an `errors` object:
+- **Errors** are always JSON. Validation errors come back as `422` with an `errors` object:
 
   ```json
   {
@@ -64,12 +64,27 @@ vendor/bin/phpunit
   }
   ```
 
-- **Authentication:** none of the routes require authentication yet. The caller passes user IDs (`user_id`, `sender_id`, …) explicitly. Registration and login return an `api_token`, but the API does not check it.
+- **Authentication:** see [below](#authentication).
 - **Rate limit:** 60 requests per minute per IP.
 - **Images:** uploaded files are stored under `public/images`. Build the URL from the returned file name:
   - post images: `{APP_URL}/images/{image_name}`
   - chat attachments: `{APP_URL}/images/message/{image}`
 - **Response shape:** most responses are JSON with a `message` string, plus the payload under a named key (`user`, `post`, `posts`, `data`, …).
+
+### Authentication
+
+Every endpoint except [register](#register) and [log in](#log-in) needs the user's `api_token`, which those two endpoints return. Send it as a bearer token:
+
+```
+Authorization: Bearer {api_token}
+```
+
+| Status | When |
+|---|---|
+| `401` `{"message": "Unauthenticated."}` | The token is missing or wrong. |
+| `403` | The request acts on another user's data. For example, `user_id`, `sender_id` or the `{userId}` in the path is not the logged-in user, the post belongs to someone else, or the user is not part of the chat. |
+
+The token is only included in the register and login responses. User objects returned anywhere else (`author`, `receiver`, …) never contain it.
 
 Paginated endpoints return 10 items per page, accept a `?page=` query parameter, and include:
 
@@ -119,6 +134,8 @@ curl -X POST http://localhost:8000/api/user/register \
 
 **409**: `Email already exists`
 
+Keep the `api_token`: it authenticates every other request.
+
 ### Log in
 
 `POST /user/login`
@@ -128,7 +145,9 @@ curl -X POST http://localhost:8000/api/user/register \
 | `email` | required, email |
 | `password` | required, string |
 
-**200**: `{ "message": "User logged in successfully", "user": { … } }`
+**200**: `{ "message": "User logged in successfully", "user": { …, "api_token": "…" } }`
+
+A user who has no token yet is issued one on login.
 
 **401**: `{ "message": "Invalid credentials", "user": null }`
 
@@ -138,7 +157,7 @@ curl -X POST http://localhost:8000/api/user/register \
 
 | Field | Rules |
 |---|---|
-| `id` | required, integer: the user to update |
+| `id` | required, integer: must be the logged-in user |
 | `name` | required, string, max 255 |
 | `email` | required, email, max 255 |
 | `photo_path` | optional, string, max 255: saved as `profile_photo_path` |
@@ -177,7 +196,7 @@ Summarises the reviews a user received as post owner. `points` also counts revie
 
 | Field | Rules |
 |---|---|
-| `user_id` | required, integer: the author |
+| `user_id` | required, integer: the author, must be the logged-in user |
 | `title` | required, string, max 255 |
 | `content` | required, string |
 | `price` | required, integer |
@@ -191,7 +210,7 @@ Summarises the reviews a user received as post owner. `points` also counts revie
 
 ```bash
 curl -X POST http://localhost:8000/api/post/create \
-  -H "Accept: application/json" \
+  -H "Authorization: Bearer $API_TOKEN" \
   -F user_id=1 -F title="Sepeda lipat" -F content="Masih mulus" -F price=1500000 \
   -F type="barang" -F can_trade_in=1 -F latitude=-6.2 -F longitude=106.8 \
   -F "image[]=@photo1.jpg" -F "image[]=@photo2.jpg"
@@ -201,7 +220,7 @@ curl -X POST http://localhost:8000/api/post/create \
 
 ### Upload more images to a post
 
-`POST /post/uploadImage` (`multipart/form-data`)
+`POST /post/uploadImage` (`multipart/form-data`). Only the post's owner can do this.
 
 | Field | Rules |
 |---|---|
@@ -246,7 +265,7 @@ Up to 10 distinct matching titles.
 
 ### Update a post
 
-`PUT /post/update`
+`PUT /post/update`. Only the post's owner can do this.
 
 | Field | Rules |
 |---|---|
@@ -266,7 +285,7 @@ Up to 10 distinct matching titles.
 
 `DELETE /post/delete/{id}`
 
-Soft-deletes the post and its images.
+Soft-deletes the post and its images. Only the post's owner can do this.
 
 **200**: `{ "message": "Post deleted successfully", "post": { … } }`
 
@@ -300,7 +319,7 @@ Posts where `{peerId}` is the trade peer and `is_published` is 2–4. Each post 
 
 | Field | Rules |
 |---|---|
-| `user_id` | required, integer: the reviewer |
+| `user_id` | required, integer: the reviewer, must be the logged-in user |
 | `post_id` | required, integer |
 | `rating` | required, integer |
 | `review` | string |
@@ -328,7 +347,7 @@ Each review includes `user`, `post` and `post_owner`.
 | Field | Rules |
 |---|---|
 | `post_id` | required, integer |
-| `user_id` | required, integer |
+| `user_id` | required, integer: must be the logged-in user |
 
 **200**: `Post saved successfully`
 
@@ -336,13 +355,13 @@ Each review includes `user`, `post` and `post_owner`.
 
 ### List saved posts
 
-`GET /post/saved/{userId}`
+`GET /post/saved/{userId}`. `{userId}` must be the logged-in user.
 
 **200**: `{ "message": "Saved posts found", "posts": [ … ] }`. Each post includes `thumnail` and `author`.
 
 ### Remove a saved post
 
-`DELETE /post/saved/delete/{userId}/{postId}`
+`DELETE /post/saved/delete/{userId}/{postId}`. `{userId}` must be the logged-in user.
 
 **200**: `Post unsaved successfully`
 
@@ -368,7 +387,7 @@ Both endpoints return `200` with an empty list and the message `Categories not f
 
 ### List a user's chats
 
-`GET /message/chats/{userId}`
+`GET /message/chats/{userId}`. `{userId}` must be the logged-in user.
 
 Chats where the user is the sender or the receiver, most recently active first. Each chat includes `receiver` and `last_message`.
 
@@ -380,7 +399,7 @@ Chats where the user is the sender or the receiver, most recently active first. 
 
 | Field | Rules |
 |---|---|
-| `user_id` | required, existing user ID |
+| `user_id` | required, existing user ID: must be the logged-in user |
 | `receiver_id` | required, existing user ID |
 | `context` | optional: ID of the post the chat is about |
 
@@ -388,7 +407,7 @@ Chats where the user is the sender or the receiver, most recently active first. 
 
 ### Messages in a chat
 
-`GET /message/messages/{chatId}`
+`GET /message/messages/{chatId}`. Only the two users in the chat can read it.
 
 Each message includes `attachments`, a list of `{ "image": "…" }`.
 
@@ -400,22 +419,31 @@ Each message includes `attachments`, a list of `{ "image": "…" }`.
 
 | Field | Rules |
 |---|---|
-| `chat_id` | required, existing chat ID |
-| `sender_id` | required, existing user ID |
+| `chat_id` | required, existing chat ID: the sender must be part of it |
+| `sender_id` | required, existing user ID: must be the logged-in user |
 | `receiver_id` | required, existing user ID |
 | `message` | string |
 | `image[]` | optional: jpeg, png, jpg, gif or svg |
 
 **201**: `{ "message": "Message sent successfully", "data": { … } }`
 
+### Attach images to a message
+
+`POST /message/image/upload` (`multipart/form-data`). Only the message's sender can do this.
+
+| Field | Rules |
+|---|---|
+| `message_id` | required, existing message ID |
+| `image[]` | required: jpeg, png, jpg, gif or svg, max 2 MB each |
+
+Use this to add images to a message that was already sent. You can also send images directly with `POST /message/send`.
+
+**201**: `{ "message": "Image uploaded successfully", "data": [ { "message_id": 1, "image": "…" } ] }`
+
 ### Mark messages as read
 
 `PUT /message/read/{chatId}/{userId}`
 
-Marks every message in the chat that was sent **to** `{userId}` as read.
-
-> The route is declared as `/message/read/{userId}/{chatId}`, but the controller reads the segments the other way round. Put the **chat ID first** and the **user ID second**, as shown above.
+Marks every message in the chat that was sent **to** `{userId}` as read. `{userId}` must be the logged-in user.
 
 **200**: `Message read successfully`
-
-`POST /message/image/upload` is also declared in `routes/api.php`, but it points to a controller method that does not exist, so calling it returns an error. To attach images to a message, send them with `POST /message/send`.

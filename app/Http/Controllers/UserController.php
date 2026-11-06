@@ -12,6 +12,7 @@ class UserController extends Controller
     protected function update(UpdateUserRequest $request) {
         $validated = $request->validated();
         if ($validated) {
+            $this->ensureIsCurrentUser($validated['id']);
             $user = User::where('id', $validated['id'])->first();
             if (!$user) {
                 return response()->json([
@@ -19,7 +20,7 @@ class UserController extends Controller
                     'user' => null
                 ], 400);
             }
-            if ($validated['photo_path']) {
+            if ($validated['photo_path'] ?? null) {
                 $user->profile_photo_path = $validated['photo_path'];
             }
             $user->name = $validated['name'];
